@@ -125,11 +125,9 @@ func WriteTypeStringTo(buf *bytes.Buffer, t Type) {
 	value.WriteTypeStringTo(buf, t)
 }
 
-// RawValue scanning non-primitive yql types or for own implementation scanner native API
-type RawValue interface {
-	Path() string
-	WritePathTo(w io.Writer) (n int64, err error)
-	Type() Type
+//nolint: unused
+//nolint: deadcode
+type converter interface {
 	Bool() (v bool)
 	Int8() (v int8)
 	Uint8() (v uint8)
@@ -149,13 +147,19 @@ type RawValue interface {
 	TzDatetime() (v time.Time)
 	TzTimestamp() (v time.Time)
 	String() (v string)
+	Bytes() (v []byte)
+	UUID() (v [16]byte)
+
 	UTF8() (v string)
 	YSON() (v []byte)
 	JSON() (v []byte)
-	UUID() (v [16]byte)
 	JSONDocument() (v []byte)
+	Path() string
+	WritePathTo(w io.Writer) (n int64, err error)
 	DyNumber() (v string)
-	Value() Value
+
+	// Unwrap unwraps current item under scan interpreting it as Optional<T> types.
+	//Unwrap()
 
 	// Any returns any primitive or optional value.
 	// Currently, it may return one of these types:
@@ -176,12 +180,6 @@ type RawValue interface {
 	//   [16]byte
 	//
 	Any() interface{}
-
-	// Unwrap unwraps current item under scan interpreting it as Optional<T> types.
-	Unwrap()
-	AssertType(t Type) bool
-	IsNull() bool
-	IsOptional() bool
 
 	// ListIn interprets current item under scan as a ydb's list.
 	// It returns the size of the nested items.
@@ -251,6 +249,18 @@ type RawValue interface {
 	// integer and its types information.
 	UnwrapDecimal() Decimal
 	IsDecimal() bool
+}
+
+// RawValue scanning non-primitive yql types or for own implementation scanner native API
+type RawValue interface {
+	//converter
+
+	Type() Type
+	Value() Value
+
+	IsNull() bool
+	IsOptional() bool
+	AssertType(t Type) bool
 	Err() error
 }
 

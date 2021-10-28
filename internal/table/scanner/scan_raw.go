@@ -207,7 +207,24 @@ func (s *rawConverter) TzTimestamp() (v time.Time) {
 
 func (s *rawConverter) String() (v string) {
 	s.unwrap()
-	return string(s.bytes())
+	switch t := s.stack.current().v.Value.(type) {
+	case *Ydb.Value_TextValue:
+		return t.TextValue
+	case *Ydb.Value_BytesValue:
+		return string(t.BytesValue)
+	}
+	return
+}
+
+func (s *rawConverter) Bytes() (v []byte) {
+	s.unwrap()
+	switch t := s.stack.current().v.Value.(type) {
+	case *Ydb.Value_TextValue:
+		return []byte(t.TextValue)
+	case *Ydb.Value_BytesValue:
+		return t.BytesValue
+	}
+	return
 }
 
 func (s *rawConverter) UTF8() (v string) {
